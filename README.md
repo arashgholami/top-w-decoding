@@ -10,7 +10,7 @@ Top-W is a **training-free, logits-processor decoding method** that truncates th
 - **Retained probability mass** (mass reward / anti-over-truncation)
 
 This repo contains:
-- A `transformers` `LogitsProcessor` implementing Top-W (`logit_processor_w1.py`)
+- A `LogitsProcessor` implementing Top-W (`logit_processor_w1.py`)
 - Scripts to run **lm-eval-harness** experiments (GSM8K / GPQA)
 - Scripts to generate + evaluate with **AlpacaEval**
 
@@ -70,7 +70,6 @@ In practice you run a small number of alternations per decoding step (e.g., 3–
   Runs **GPQA** with `lm_eval` over a list of models.
   - Same aggregation style as `run.sh`
   - Produces one summary JSON per model
-  - **Important**: if `set -u` is enabled, ensure `LIMIT_ARGS=()` is defined in the script
 
 ### AlpacaEval generation + evaluation
 - `alpaca_generate_w.py`  
@@ -99,7 +98,7 @@ conda activate topw
 #### Core
 ```bash
 pip install -U pip
-pip install torch --index-url https://download.pytorch.org/whl/cu121   # choose the right CUDA wheel for your system
+pip install torch --index-url https://download.pytorch.org/whl/cu121   
 pip install transformers accelerate safetensors sentencepiece
 pip install numpy scipy tqdm datasets
 ```
@@ -169,7 +168,7 @@ Optional geometry mode (if implemented):
 ```bash
 export DEVICE=cuda:0
 export T=1.0
-export m=400
+export m=1200
 
 bash run.sh
 ```
