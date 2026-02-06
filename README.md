@@ -56,31 +56,7 @@ In practice you run a small number of alternations per decoding step (e.g., 3–
 
 ### Harness glue
 - `huggingface.py`  
-  Glue code to ensure custom generation kwargs are passed through the `lm_eval` Hugging Face backend.
-  This is the “plumbing layer” that makes `--gen_kwargs "top_m=...,lambda_geom=...,beta=..."` reach generation.
-
-
----
-
-## Acknowledgements
-
-Parts of the evaluation/harness plumbing were adapted from the reference implementation accompanying:
-
-- Erfan Baghaei Potraghloo, Seyedarmin Azizi, Souvik Kundu, Massoud Pedram,  
-  **“Top-H Decoding: Adapting the Creativity and Coherence with Bounded Entropy in Text Generation”**, 2025.  
-  arXiv:2509.02510.
-
-### BibTeX
-
-```bibtex
-@misc{potraghloo2025toph,
-  title        = {Top-H Decoding: Adapting the Creativity and Coherence with Bounded Entropy in Text Generation},
-  author       = {Erfan Baghaei Potraghloo and Seyedarmin Azizi and Souvik Kundu and Massoud Pedram},
-  year         = {2025},
-  eprint       = {2509.02510},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.CL}
-}
+  Glue code to ensure custom generation kwargs are passed through the `lm_eval` Hugging Face backend.  **Adapted from the implementation released with Top-H Decoding** (Baghaei Potraghloo et al., 2025; arXiv:2509.02510).
 
 
 ### lm-eval-harness scripts
