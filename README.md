@@ -10,7 +10,7 @@ Top-W is a **training-free, logits-processor decoding method** that truncates th
 - **Retained probability mass** (mass reward / anti-over-truncation)
 
 This repo contains:
-- A `transformers` LogitsProcessor implementing Top-W (`logit_processor_w1.py`)
+- A `transformers` `LogitsProcessor` implementing Top-W (`logit_processor_w1.py`)
 - Scripts to run **lm-eval-harness** experiments (GSM8K / GPQA)
 - Scripts to generate + evaluate with **AlpacaEval**
 
@@ -61,16 +61,16 @@ In practice you run a small number of alternations per decoding step (e.g., 3–
 
 ### lm-eval-harness scripts
 - `run.sh`  
-  Runs **GSM8K CoT** with `lm_eval`.  
-  - Expects environment vars `T` and `m` each run  
-  - Sweeps over a (small) grid of Top-W parameters  
-  - Parses the lm_eval JSON output and appends a compact record to a single summary file  
+  Runs **GSM8K CoT** with `lm_eval`.
+  - Expects environment vars `T` and `m` each run
+  - Sweeps over a (small) grid of Top-W parameters
+  - Parses the lm_eval JSON output and appends a compact record to a single summary file
 
 - `run_gpqa.sh`  
-  Runs **GPQA** with `lm_eval` over a list of models.  
-  - Same aggregation style as `run.sh`  
-  - Produces one summary JSON per model  
-  - **Important**: if `set -u` is enabled, ensure `LIMIT_ARGS=()` is defined in the script  
+  Runs **GPQA** with `lm_eval` over a list of models.
+  - Same aggregation style as `run.sh`
+  - Produces one summary JSON per model
+  - **Important**: if `set -u` is enabled, ensure `LIMIT_ARGS=()` is defined in the script
 
 ### AlpacaEval generation + evaluation
 - `alpaca_generate_w.py`  
@@ -92,3 +92,144 @@ In practice you run a small number of alternations per decoding step (e.g., 3–
 ```bash
 conda create -n topw python=3.10 -y
 conda activate topw
+```
+
+### 2) Install dependencies
+
+#### Core
+```bash
+pip install -U pip
+pip install torch --index-url https://download.pytorch.org/whl/cu121   # choose the right CUDA wheel for your system
+pip install transformers accelerate safetensors sentencepiece
+pip install numpy scipy tqdm datasets
+```
+
+#### lm-eval-harness
+```bash
+pip install lm-eval
+# or (editable):
+# git clone https://github.com/EleutherAI/lm-evaluation-harness.git
+# cd lm-evaluation-harness && pip install -e .
+```
+
+#### AlpacaEval
+```bash
+pip install alpaca-eval
+```
+
+### 3) (Optional) API keys / auth
+
+If you plan to run AlpacaEval with an OpenAI judge (e.g., `gpt4o`):
+```bash
+export OPENAI_API_KEY="..."
+```
+
+If you evaluate gated Hugging Face models (e.g., some Llama checkpoints):
+```bash
+export HF_TOKEN="..."
+huggingface-cli login
+```
+
+### 4) Quick sanity check
+```bash
+python3 -c "from logit_processor_w1 import TopW_LogitsProcessor; print('OK')"
+```
+
+---
+
+## Usage
+
+### Top-W generation knobs
+
+Top-W is controlled via generation kwargs:
+
+- `top_m`: candidate pool size (Top-M by probability, where Top-W operates)
+- `selection_temperature` (`Tsel`): temperature used for selection (kept-set decision)
+- `temperature` (`T`): final sampling temperature for generation
+- `lambda_geom` (`lam`): entropy/sharpness control
+- `beta`: mass-retention reward (prevents overly small crops)
+- `warm_p`: warm-up behavior (if implemented in your processor)
+
+Optional debug toggles:
+- `TOPW_PRINT_PARAMS=1`
+- `TOPW_PRINT_KEPT=1`
+- `TOPW_DEBUG_STEPS=1`
+
+Optional geometry mode (if implemented):
+- `TOPW_GEOM_MODE=...`
+
+---
+
+## Running lm-eval-harness (GSM8K / GPQA)
+
+### GSM8K CoT
+
+`run.sh` expects `T` and `m` as environment variables:
+
+```bash
+export DEVICE=cuda:0
+export T=1.0
+export m=400
+
+bash run.sh
+```
+
+Outputs:
+- Per-run lm_eval JSON is generated, parsed, then removed
+- A single summary file is kept:
+  - `temp/all_results_<timestamp>_T${T}_m${m}_geom${TOPW_GEOM_MODE}.json`
+
+The summary contains one record per run with:
+- `strict-match_value` / `strict-match_std`
+- `flexible-extract_value` / `flexible-extract_std`
+
+### GPQA (multi-model sweep)
+
+```bash
+export DEVICE=cuda:0
+export T=1.0
+export m=1200
+
+bash run_gpqa.sh
+```
+
+Outputs:
+- One aggregated summary JSON per model under `temp/`
+
+---
+
+## Running AlpacaEval
+
+### 1) Generate model outputs with Top-W
+
+`alpaca_generate_w.py` loads the AlpacaEval eval set and generates completions using:
+`logits_processor=[TopW_LogitsProcessor(...)]`.
+
+Example:
+
+```bash
+python3 -u alpaca_generate_w.py \
+  --save_address "./outputs_llama_T1.0.json" \
+  --model_name "meta-llama/Llama-3.1-8B-Instruct" \
+  --max_new_tokens 1024 \
+  --temperature 1.0 \
+  --do_sample \
+  --lam 2.2 \
+  --beta 2.8
+```
+
+### 2) Evaluate with AlpacaEval
+
+```bash
+alpaca_eval \
+  --annotators_config "gpt4o" \
+  --model_outputs "./outputs_llama_T1.0.json" \
+  --output_path "./alpaca_results_w/meta-llama_Llama-3.1-8B-Instruct_T1.0" \
+  --precomputed_leaderboard None
+```
+
+Or run the wrapper script (generate + evaluate):
+
+```bash
+bash alpaca_evaluate_w.sh
+```
