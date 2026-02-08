@@ -23,9 +23,7 @@ and samples from the renormalized distribution `q_S`.
 
 Top-W chooses `S` by minimizing an objective of the form:
 
-\[
-F_{\lambda,\beta}(S) = W_1(p, q_S) + \lambda H(q_S) - \beta \log \Gamma_S
-\]
+`F_{\lambda,\beta}(S) = W_1(p, q_S) + \lambda H(q_S) - \beta \log \Gamma_S`
 
 where:
 - `W1(p, q_S)` is a geometry-aware transport penalty defined on a token metric derived from embeddings
