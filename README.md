@@ -32,7 +32,7 @@ where:
 - `λ` controls entropy (sharpness / coherence)
 - `β` controls mass retention (avoid overly small crops)
 
-**Efficient implementation idea (practical Top-W):**
+**Efficient implementation (practical Top-W):**
 - Restrict computation to a **candidate pool** `C = top_m` most probable tokens
 - Alternate:
   - Build a feasible potential from distances to the current set (geometry)
