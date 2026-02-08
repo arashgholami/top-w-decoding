@@ -16,7 +16,7 @@ This repo contains:
 
 ---
 
-## Method (high level)
+## Method 
 
 At each decoding step, the model produces a distribution `p` over the vocabulary. Top-W selects a kept set `S`
 and samples from the renormalized distribution `q_S`.
