@@ -1,4 +1,4 @@
-# top-w-decoding
+# Geometry-Aware Decoding with Wasserstein-Regularized Truncation and Mass Penalties for Large Language Models
 
 Implementation of **Top-W (Wasserstein-regularized truncation)** for LLM inference-time decoding.
 
