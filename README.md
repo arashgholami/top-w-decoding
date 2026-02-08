@@ -42,7 +42,7 @@ In practice you run a small number of alternations per decoding step (e.g., 3–
 
 ---
 
-## Repository structure (what each file does)
+## Repository structure 
 
 ### Core decoding
 - `logit_processor_w1.py`  
